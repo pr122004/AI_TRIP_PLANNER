@@ -1,48 +1,19 @@
 import axios from 'axios';
- // if you're using dispatch here
+import { toast } from 'react-toastify';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true, // Important for sending cookies
+  withCredentials: true,
 });
 
-// Request interceptor: NO need to add Authorization manually
-axiosInstance.interceptors.request.use(
-  (config) => {
-    // No token manually needed, cookies will be sent automatically
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor: Handles 401 & tries refreshing the token
 axiosInstance.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // Attempt to refresh access token using refresh token cookie
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
-          {},
-          { withCredentials: true }
-        );
-
-        // No need to store accessToken manually if it's sent as cookie
-        // Retry the original request
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        console.error('Refresh token expired or invalid');
-        // store.dispatch(user(null)); // clear Redux state
-        window.location.href = '/login'; // redirect to login
-        return Promise.reject(refreshError);
-      }
+  (error) => {
+    if (error.response?.status === 401) {
+      console.error('Unauthorized request');
+      toast.error('Session expired or unauthorized. Please login.');
+      // Do not retry, do not redirect here
     }
-
     return Promise.reject(error);
   }
 );

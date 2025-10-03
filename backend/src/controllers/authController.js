@@ -55,10 +55,9 @@ return res.status(201).json(
 )
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
-      message: 'Registration failed',
-      error: error.message,
+      message: error.message ||'Registration failed',
     });
   }
 };

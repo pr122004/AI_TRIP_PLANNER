@@ -1,68 +1,59 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axiosInstance from '../api/axiosInstance.js';
-import { API_URL } from '../config.js';
+import { toast } from 'react-toastify';
 
-// Async thunks
+// ================== ASYNC THUNKS ==================
+
+// Register
 export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post('/auth/register', userData);
-      return response.data;
+      return response.data.data.user; // full user object
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Registration failed'
-      );
+      const message = error.response?.data?.message || 'Registration failed';
+      toast.error(message);
+      return rejectWithValue(message);
     }
   }
 );
 
+// Login
 export const login = createAsyncThunk(
   'auth/login',
   async ({ email, password }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post('/auth/login', { email, password });
-      const { user } = response.data.data;
-    
-      return user;
+      return response.data.data.user; // full user object
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Login failed'
-      );
+      const message = error.response?.data?.message || 'Login failed';
+      toast.error(message);
+      return rejectWithValue(message);
     }
   }
 );
 
+// Check Auth
 export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
-  async (_, { getState, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const { token } = getState().auth;
-      
-      if (!token) {
-        return rejectWithValue('No token found');
-      }
-      
-      const response = await axiosInstance.get('/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
-      return response.data;
+      const response = await axiosInstance.get('/auth/me'); // expects cookie
+      return response.data.data.user;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Authentication failed'
-      );
+      const message = error.response?.data?.message || 'Authentication failed';
+      // show toast only once
+      toast.error(message);
+      return rejectWithValue(message);
     }
   }
 );
 
-// Slice
+// ================== SLICE ==================
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    token: null,
     user: null,
     isAuthenticated: false,
     loading: false,
@@ -70,9 +61,17 @@ const authSlice = createSlice({
   },
   reducers: {
     logout: (state) => {
-      state.token = null;
       state.user = null;
       state.isAuthenticated = false;
+      state.error = null;
+    },
+    setUser: (state, action) => {
+      state.user = action.payload;
+      state.isAuthenticated = !!action.payload;
+      state.loading = false;
+    },
+    setLoading: (state, action) => {
+      state.loading = action.payload;
     },
     clearError: (state) => {
       state.error = null;
@@ -88,14 +87,13 @@ const authSlice = createSlice({
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-        state.token = action.payload.token;
-        state.user = action.payload.user;
+        state.user = action.payload;
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Login
       .addCase(login.pending, (state) => {
         state.loading = true;
@@ -104,32 +102,31 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-        state.token = action.payload.token;
-        state.user = action.payload.user;
+        state.user = action.payload;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Check Auth
       .addCase(checkAuth.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.user;
+        state.user = action.payload;
       })
-      .addCase(checkAuth.rejected, (state) => {
+      .addCase(checkAuth.rejected, (state, action) => {
         state.loading = false;
         state.isAuthenticated = false;
-        state.token = null;
         state.user = null;
+        state.error = action.payload;
       });
   }
 });
 
-export const { logout, clearError } = authSlice.actions;
-
+export const { logout, setUser, setLoading, clearError } = authSlice.actions;
 export default authSlice.reducer;

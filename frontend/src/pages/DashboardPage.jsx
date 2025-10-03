@@ -9,7 +9,8 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector(state => state.auth);
+  const { user }= useSelector(state => state.auth);
+  console.log(user);
   const { trips, loading, error } = useSelector(state => state.trips);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ const DashboardPage = () => {
               <span className="text-xl font-bold">{user?.name?.charAt(0) || 'U'}</span>
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {user?.name?.split(' ')[0] || 'Traveler'}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">{user?.name ? `Welcome back, ${user.name.split(' ')[0]}` : 'Welcome!'}</h1>
               <p className="text-primary-200">Let's plan your next adventure</p>
             </div>
           </div>
@@ -63,7 +64,7 @@ const DashboardPage = () => {
       {/* Trip Overview Section */}
       <section>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Your Trips</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Your Trips</h2>
           <Link to="/trips" className="text-primary-600 hover:text-primary-700 font-medium text-sm inline-flex items-center">
             View all <span className="ml-1">→</span>
           </Link>
@@ -110,7 +111,7 @@ const DashboardPage = () => {
       {/* Weather Overview for Upcoming Trips */}
       {weatherData.upcoming.length > 0 && (
         <section className="mt-12">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Weather for Upcoming Trips</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Weather for Upcoming Trips</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {weatherData.upcoming.map((item, index) => (

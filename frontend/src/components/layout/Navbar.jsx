@@ -39,7 +39,7 @@ const Navbar = ({ toggleSidebar }) => {
     <header 
       className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled || !isHomePage 
-          ? 'bg-white shadow-sm dark:bg-black dark:shadow-lg' 
+          ? 'bg-white shadow-sm dark:bg-gray-900 dark:shadow-lg' 
           : 'bg-transparent'
       }`}
     >
@@ -59,7 +59,7 @@ const Navbar = ({ toggleSidebar }) => {
             
             {isAuthenticated ? (
               <div className="relative group">
-                <button className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 font-medium">
+                <button className="flex items-center space-x-2 text-gray-700 dark:text-white hover:text-primary-600 font-medium">
                   <span>{user?.name || 'User'}</span>
                   <User className="w-5 h-5" />
                 </button>

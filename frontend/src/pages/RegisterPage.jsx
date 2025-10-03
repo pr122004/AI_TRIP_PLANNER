@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { Globe, Eye, EyeOff } from 'lucide-react';
-import { register } from '../redux/authSlice';
+import { register, login } from '../redux/authSlice';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -36,10 +36,15 @@ const RegisterPage = () => {
     try {
       // Remove confirmPassword before sending to API
       const { confirmPassword, ...registerData } = formData;
-      await dispatch(register(registerData)).unwrap();
+      const resultAction = await dispatch(register(registerData)).unwrap();
       toast.success("Account created successfully!");
-      navigate('/dashboard');
+      if(register.fulfilled.match(resultAction)) {
+        // Automatically log in the user after registration
+        await dispatch(login({ email: formData.email, password: formData.password })).unwrap();
+        navigate('/dashboard');
+      }
     } catch (error) {
+      console.log("Registration error:", error);
       toast.error(error || "Failed to create account. Please try again.");
     } finally {
       setLoading(false);

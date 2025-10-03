@@ -1,19 +1,20 @@
+import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize the Google Generative AI with API key
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+dotenv.config();
 
-// Function to generate trip itinerary using Gemini AI
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
 export const generateTripItinerary = async (trip) => {
   try {
-    // Create a model instance
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const model = genAI.getGenerativeModel({ model: "learnlm-2.0-flash-experimental" });
     
     // Format dates for prompt
     const startDate = new Date(trip.startDate);
     const endDate = new Date(trip.endDate);
     
-    // Generate the prompt for AI
+    
     const prompt = `
       Generate a detailed day-by-day travel itinerary for a trip to ${trip.destination}.
       
@@ -53,18 +54,15 @@ export const generateTripItinerary = async (trip) => {
       Focus on providing a realistic, well-paced itinerary that includes both popular attractions and local experiences.
     `;
     
-    // Generate content
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     
-    // Extract the JSON from the response
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
       throw new Error('Failed to parse AI response');
     }
     
-    // Parse the JSON
     const itinerary = JSON.parse(jsonMatch[0]);
     
     // Process the itinerary to ensure proper date format
@@ -82,7 +80,6 @@ export const generateTripItinerary = async (trip) => {
       };
     });
     
-    // Update the trip in the database with the new itinerary
     const updatedTrip = await trip.constructor.findByIdAndUpdate(
       trip._id,
       { itinerary: processedItinerary },
@@ -92,7 +89,6 @@ export const generateTripItinerary = async (trip) => {
     return processedItinerary;
   } catch (error) {
     console.error('AI itinerary generation error:', error);
-    // If AI fails, generate a fallback itinerary
   }
 };
 

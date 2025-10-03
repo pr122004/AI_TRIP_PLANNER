@@ -8,6 +8,7 @@ import DayItinerary from '../components/trips/DayItinerary';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { toast } from 'react-toastify';
+import html2pdf from 'html2pdf.js';
 
 const TripDetailsPage = () => {
   const { id } = useParams();
@@ -20,6 +21,25 @@ const TripDetailsPage = () => {
       dispatch(fetchTripById(id));
     }
   }, [dispatch, id]);
+
+
+const handleExportPDF = () => {
+  const element = document.getElementById('trip-content');
+
+  const opt = {
+    margin: 0,
+    filename: 'trip-itinerary.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff', // avoid transparent/gradient backgrounds
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(element).save();
+};
 
   const handleDelete = async () => {
     try {
@@ -71,7 +91,7 @@ const TripDetailsPage = () => {
   }
 
   return (
-    <motion.div
+    <motion.div id="trip-content"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -123,7 +143,7 @@ const TripDetailsPage = () => {
                 <Share2 className="w-4 h-4 mr-2" />
                 Share
               </button>
-              <button className="btn bg-white/10 hover:bg-white/20 text-white inline-flex items-center">
+              <button  onClick={handleExportPDF} className="btn bg-white/10 hover:bg-white/20 text-white inline-flex items-center">
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </button>
@@ -143,7 +163,7 @@ const TripDetailsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left sidebar with trip details */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="card p-6">
+          <div className="card p-6 dark:bg-gray-900">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Trip Details</h2>
             
             <dl className="space-y-4">
@@ -202,14 +222,14 @@ const TripDetailsPage = () => {
             </dl>
           </div>
           
-          <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Weather Forecast</h2>
+          <div className="card p-6 dark:bg-gray-900">
+            <h2 className="text-lg font-semibold dark:text-white text-gray-900 mb-4">Weather Forecast</h2>
             
             <div className="text-center py-8">
               <div className="inline-block p-4 bg-gray-100 rounded-full mb-3">
                 <Calendar className="w-8 h-8 text-gray-500" />
               </div>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-white">
                 Weather forecast will be available 7 days before your trip.
               </p>
             </div>
@@ -218,16 +238,16 @@ const TripDetailsPage = () => {
         
         {/* Main content with itinerary */}
         <div className="lg:col-span-2">
-          <div className="card">
+          <div className="card dark:bg-gray-900">
             <div className="border-b border-gray-200 p-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">Your Itinerary</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Your Itinerary</h2>
                 <button className="btn btn-secondary inline-flex items-center">
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Itinerary
                 </button>
               </div>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 dark:text-white mt-2">
                 AI-generated itinerary for your trip to {selectedTrip.destination}
               </p>
             </div>
@@ -247,12 +267,12 @@ const TripDetailsPage = () => {
               ) : (
                 <div className="text-center py-12">
                   <div className="inline-block p-6 bg-gray-100 rounded-full mb-6">
-                    <Clock className="w-12 h-12 text-gray-400" />
+                    <Clock className="w-12 h-12 text-gray-400 dark:text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     Your itinerary is being generated
                   </h3>
-                  <p className="text-gray-600 max-w-md mx-auto mb-6">
+                  <p className="text-gray-600 dark:text-white max-w-md mx-auto mb-6">
                     Our AI is working on creating your perfect trip plan. This might take a few moments.
                   </p>
                   <div className="animate-pulse flex justify-center gap-2">
